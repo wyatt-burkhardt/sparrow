@@ -8,6 +8,10 @@ function Room:init(player)
     self.tiles = {}
     self:generateWallsAndFloors()
 
+
+    self.doorways = {}
+    table.insert(self.doorways, Doorway('top', false, self))
+
     self.player = player
 
     self.renderOffsetX = MAP_RENDER_OFFSET_X
@@ -71,6 +75,10 @@ function Room:render()
         end
     end
 
+    for k, doorway in pairs(self.doorways) do
+        doorway:render(self.adjacentOffsetX, self.adjacentOffsetY)
+    end
+    
     if self.player then
         self.player:render()
     end
