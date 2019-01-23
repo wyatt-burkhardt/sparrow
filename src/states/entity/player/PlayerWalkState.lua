@@ -9,6 +9,8 @@ function PlayerWalkState:init(player, dungeon)
     -- render offset for spaced character sprite
     self.entity.offsetY = 5
     self.entity.offsetX = 0
+
+    print(self.entity.inventory['Key'])
 end
 
 function PlayerWalkState:update(dt)
