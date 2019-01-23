@@ -8,6 +8,12 @@ function Room:init(player)
     self.tiles = {}
     self:generateWallsAndFloors()
 
+    self.objects = {}
+    self:generateObjects()
+
+    self.doorways = {}
+    table.insert(self.doorways, Doorway('top', false, self))
+
     self.player = player
 
     self.renderOffsetX = MAP_RENDER_OFFSET_X
@@ -17,6 +23,25 @@ function Room:init(player)
     self.adjacentOffsetY = 0
 
     
+end
+
+function Room: generateObjects()
+    table.insert(self.objects, GameObject(
+        GAME_OBJECT_DEFS['key'],
+        math.random(MAP_RENDER_OFFSET_X + TILE_SIZE,
+                    VIRTUAL_WIDTH - TILE_SIZE * 2 -16),
+        math.random(MAP_RENDER_OFFSET_Y + TILE_SIZE,
+                    VIRTUAL_HEIGHT - (VIRTUAL_HEIGHT - MAP_HEIGHT * TILE_SIZE) + MAP_RENDER_OFFSET_Y - TILE_SIZE -16)
+    ))
+
+    local key = self.objects[1]
+
+    key.onCollide = function()
+        print('HELLZ YEA A KEY!!!')
+        gSounds['keyPickup']:play()
+        key.pickedUp = true
+        Entity:addItemToInventory(self.player.inventory, "Key", 1)
+    end
 end
 
 function Room:generateWallsAndFloors()
@@ -59,6 +84,25 @@ function Room:update(dt)
     if self.adjacentOffsetX ~= 0 or self.adjacentOffsetY ~= 0 then return end
 
     self.player:update(dt)
+
+    for k, object in pairs(self.objects) do
+        object:update(dt)
+
+        --trigger collision callback on object
+        if self.player:collides(object) then
+            object:onCollide()
+        end
+    end
+
+    for k, doorway in pairs(self.doorways) do
+        if self.player:collides(doorway) then
+            if self.player.inventory['Key'] ~= nil then
+                doorway.open = true
+                Entity:removeItemFromInventory(self.player.inventory, "Key", 1)
+                gSounds['doorOpen']:play()
+            end
+        end
+    end
 end
 
 function Room:render()
@@ -71,6 +115,17 @@ function Room:render()
         end
     end
 
+    for k, doorway in pairs(self.doorways) do
+        doorway:render(self.adjacentOffsetX, self.adjacentOffsetY)
+    end
+    
+    for k, object in pairs(self.objects) do
+        if object.pickedUp == false then
+            object:render(self.adjacentOffsetX, self.adjacentOffsetY)
+        else
+            table.remove(self.objects, k)
+        end
+    end
     if self.player then
         self.player:render()
     end
