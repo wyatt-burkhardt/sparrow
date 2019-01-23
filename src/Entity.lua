@@ -19,6 +19,9 @@ function Entity:init(def)
 
     self.heath = def.health
 
+    self.inventory = {}
+
+
     -- flags for the flashing when hit
     self.invulnerable = false
     self.invulnerableDuration = 0
@@ -64,6 +67,24 @@ function Entity:changeAnimation(name)
     self.currentAnimation = self.animations[name]
 end
 
+function Entity:addItemToInventory(inventory,item,amount)
+	if (inventory[item] ~= nil) then  --there are items like this in the inventory already
+		inventory[item] = inventory[item] + amount --so we add the amount to the ones already there
+	else --there is no item like this in the inventory
+		inventory[item] = amount --so the new amount of that item is the one we're adding
+	end
+end
+
+function Entity:removeItemFromInventory(inventory, item, amount)
+    if (inventory[item] ~= nil) then
+        if (inventory[item] >= 1) then
+            inventory[item] = inventory[item] - amount
+        else
+            inventory[item] = nil
+        end
+    end
+end
+
 function Entity:update(dt)
     if self.invulnerable then
         self.flashTimer = self.flashTimer + dt
@@ -100,3 +121,5 @@ function Entity:render(adjacentOffsetX, adjacentOffsetY)
     love.graphics.setColor(255, 255, 255, 255)
     self.x, self.y = self.x - (adjacentOffsetX or 0), self.y - (adjacentOffsetY or 0)
 end
+
+

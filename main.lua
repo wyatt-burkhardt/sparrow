@@ -42,6 +42,7 @@ function love.keyboard.wasPressed(key)
     return love.keyboard.keysPressed[key]
 end
 
+
 function love.update(dt)
     Timer.update(dt)
     gStateMachine:update(dt)
